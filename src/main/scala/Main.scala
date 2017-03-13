@@ -1,8 +1,9 @@
 import java.util.concurrent.TimeUnit
 import domain.entity.user.User
-import domain.repository.quill.Db
+import domain.repository.Db
 import domain.service.MixInUserService
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.util.Try
@@ -10,10 +11,17 @@ import scala.util.Try
 object Main extends MixInUserService {
   def values[A](a: Future[A]): A = Await.result(a, Duration(10, TimeUnit.SECONDS))
 
-  def main(args: Array[String]): Unit = {
-    Db.setUp()
-    Db.createTables()
+  def setUp(): Future[Unit] = {
+    Future {
+      Db.setUp()
+      Db.createTable()
+    }
+  }
 
+  def tearDown(): Future[Unit] =
+    Future(Db.close())
+
+  def user(): Unit = {
     val okumin = User(1, "okumin")
     val randy = User(2, "randy")
 
@@ -38,7 +46,15 @@ object Main extends MixInUserService {
     val user5 = Try(values(userService.readOrFail(2)))
 
     println(user5)
+  }
 
-    Db.close()
+  def main(args: Array[String]): Unit = {
+    val f = for {
+      _ <- setUp()
+      u = user()
+      _ <- tearDown()
+    } yield ()
+
+    values(f)
   }
 }

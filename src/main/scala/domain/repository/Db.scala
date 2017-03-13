@@ -1,4 +1,4 @@
-package domain.repository.quill
+package domain.repository
 
 import scalikejdbc._
 import scalikejdbc.config._
@@ -15,7 +15,7 @@ object Db {
 
   def close(): Unit = DBs.closeAll()
 
-  def createTables(): Unit = {
+  def createTable(): Unit = {
     DB localTx { implicit s =>
       createUserTable.execute().apply()
     }
