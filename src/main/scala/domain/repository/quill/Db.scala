@@ -3,7 +3,7 @@ package domain.repository.quill
 import scalikejdbc._
 import scalikejdbc.config._
 
-object SetupDb {
+object Db {
   private def createUserTable = sql"""
     create table `user` (
       `id` bigint not null auto_increment,
@@ -11,8 +11,11 @@ object SetupDb {
     )
   """
 
+  def setUp(): Unit = DBs.setupAll()
+
+  def close(): Unit = DBs.closeAll()
+
   def createTables(): Unit = {
-    DBs.setupAll()
     DB localTx { implicit s =>
       createUserTable.execute().apply()
     }

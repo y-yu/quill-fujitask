@@ -1,22 +1,44 @@
+import java.util.concurrent.TimeUnit
 import domain.entity.user.User
-import domain.repository.quill.SetupDb
+import domain.repository.quill.Db
 import domain.service.MixInUserService
 import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scala.util.Try
 
 object Main extends MixInUserService {
+  def values[A](a: Future[A]): A = Await.result(a, Duration(10, TimeUnit.SECONDS))
+
   def main(args: Array[String]): Unit = {
-    SetupDb.createTables()
+    Db.setUp()
+    Db.createTables()
 
     val okumin = User(1, "okumin")
     val randy = User(2, "randy")
 
-    val user1 = Await.result(userService.readOrCreate(okumin), Duration.Inf)
-    val user2 = Await.result(userService.readOrCreate(okumin), Duration.Inf)
-    val user3 = Await.result(userService.readOrCreate(randy), Duration.Inf)
+    val user1 = values(userService.readOrCreate(okumin))
+    val user2 = values(userService.readOrCreate(okumin))
+    val user3 = values(userService.readOrCreate(randy))
 
     println(user1)
     println(user2)
     println(user3)
+
+    val users1 = values(userService.readAll)
+
+    println(users1)
+
+    val okumin2 = okumin.copy(name = "okumin2")
+
+    val user4 = values(userService.updateOrCreate(okumin2))
+
+    println(user4)
+
+    val user5 = Try(values(userService.readOrFail(2)))
+
+    println(user5)
+
+    Db.close()
   }
 }

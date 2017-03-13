@@ -26,17 +26,27 @@ class UserRepositoryQuillImpl extends UserRepository {
       ctx.run(q).headOption
   }
 
-  def update(user: User): Task[ReadWriteTransaction, Unit] =
+  override def readAll: Task[ReadTransaction, Seq[User]] =
     ask map { ctx =>
       import ctx._
 
       val q = quote {
-        query[User].update(lift(user))
+        query[User]
       }
       ctx.run(q)
     }
 
-  def delete(id: Long): Task[ReadWriteTransaction, Unit] =
+  override def update(user: User): Task[ReadWriteTransaction, Unit] =
+    ask map { ctx =>
+      import ctx._
+
+      val q = quote {
+        query[User].filter(_.id == lift(user.id)).update(lift(user))
+      }
+      ctx.run(q)
+    }
+
+  override def delete(id: Long): Task[ReadWriteTransaction, Unit] =
     ask map { ctx =>
       import ctx._
 

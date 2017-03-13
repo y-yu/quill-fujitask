@@ -17,6 +17,8 @@ trait UserRepository {
 
   def read(id: Long): Task[ReadTransaction, Option[User]]
 
+  def readAll: Task[ReadTransaction, Seq[User]]
+
   def update(user: User): Task[ReadWriteTransaction, Unit]
 
   def delete(id: Long): Task[ReadWriteTransaction, Unit]
